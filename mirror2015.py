@@ -28,6 +28,8 @@ EXT = 'tar'
 PREFIXCAM = 'cam'
 COPY = 'cp'
 MD5SUM = 'md5sum'
+
+
 # change to the following line for multi- threaded replacements mcps and msum
 # for single-threaded Linux utilities cp and md5dum
 # COPY = 'mcp'
@@ -63,6 +65,7 @@ def incrementProgress():
     statusShelf['progress'] += 1
     statusShelf.sync()
 
+
 # enables Multi-threaded Copy and MD5 Checksums
 # module load mutil
 
@@ -80,28 +83,38 @@ TAR_LIST.sort()
 
 # the process is executed for all of the tar files
 while len(TAR_LIST) > getProgress():
+
     # gets next file name from the list
     nextFile = TAR_LIST[getProgress()]
+
     # generates the source path
     nextArchivePath = os.path.join(SOURCE_DIR, nextFile)
+
     # the first 8 characters correspond to YYYYMMDD
     DAY_DIR = nextFile[:8]
+
     # Path to day dir
     nextOutputPathDay = os.path.join(DEST_DIR, DAY_DIR)
+
     # parses the cam from the filename
     CAM_DIR = getCam(nextFile)
+
     # final Output path
     nextOutputPathCam = os.path.join(nextOutputPathDay, PREFIXCAM + CAM_DIR)
+
     # and path to validate if the file was previously copied
     existsPath = os.path.join(nextOutputPathCam, nextFile)
     if not os.path.exists(nextOutputPathDay):
         os.mkdir(nextOutputPathDay)
-        # Checks if the file exists to avoid overwriting
+
+    # Checks if the file exists to avoid overwriting
     if not os.path.exists(nextOutputPathCam):
         os.mkdir(nextOutputPathCam)
-        # Checks if the file exists to avoid overwriting
+
+    # Checks if the file exists to avoid overwriting
     if not os.path.exists(existsPath):
         # shutil.copy(nextArchivePath, nextOutputPathCam)
         subprocess.call([COPY, nextArchivePath, nextOutputPathCam])
         print(nextArchivePath)
+
     incrementProgress()
