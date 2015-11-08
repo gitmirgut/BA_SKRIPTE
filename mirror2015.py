@@ -10,6 +10,9 @@ import re
 import shelve
 import shutil
 import subprocess
+import logging
+import logging.handlers
+import datetime
 
 TAR_LIST = list()
 
@@ -24,6 +27,7 @@ TAR_LIST = list()
 SOURCE_DIR = '/media/mrpoin/myStorage/BA_SKRIPTE/dummyFiles/gfs1/work/bebesook_data_2014'
 DEST_DIR = '/media/mrpoin/myStorage/BA_SKRIPTE/structure'
 STATUSFILE = '/media/mrpoin/myStorage/BA_SKRIPTE/Mirror2015.status'
+LOGFILE = '/media/mrpoin/myStorage/BA_SKRIPTE/Mirror2015.log'
 EXT = 'tar'
 PREFIXCAM = 'cam'
 COPY = 'cp'
@@ -66,17 +70,35 @@ def incrementProgress():
     statusShelf.sync()
 
 
+# Initializes logging
+def initLogging():
+    logHandler = logging.handlers.TimedRotatingFileHandler(filename=LOGFILE, when='midnight', backupCount=60)
+    logHandler.setFormatter(logging.Formatter(fmt='[ %(asctime)s ] %(message)s'))
+    logHandler.setLevel(logging.DEBUG)
+    logging.getLogger('').setLevel(logging.DEBUG)
+    logging.getLogger('').addHandler(logHandler)
+    print('logging to:', LOGFILE)
+
+
 # enables Multi-threaded Copy and MD5 Checksums
 # module load mutil
 
-# Checks if there is a statusShelf		
+initLogging( )
+# Checks if there is a statusShelf
+startTime = datetime.datetime.now()
+
 try:
     statusShelf = shelve.open(STATUSFILE, protocol=0, writeback=True)
+    logging.info('Status file has been opened')
 except:
     pass
 # If not then initializes one with progress = 0
 if not ('progress' in statusShelf):
     putOnShelf('progress', 0)
+    logging.info('--START with a new copy process')
+
+if getProgress() > 0:
+    logging.info('Continue with the last copy process')
 
 TAR_LIST = [file for file in os.listdir(SOURCE_DIR) if filterFileName(file)]
 TAR_LIST.sort()
@@ -105,6 +127,7 @@ while len(TAR_LIST) > getProgress():
     # and path to validate if the file was previously copied
     existsPath = os.path.join(nextOutputPathCam, nextFile)
     if not os.path.exists(nextOutputPathDay):
+        logging.info('Folder %s was created', DAY_DIR)
         os.mkdir(nextOutputPathDay)
 
     # Checks if the file exists to avoid overwriting
@@ -113,8 +136,13 @@ while len(TAR_LIST) > getProgress():
 
     # Checks if the file exists to avoid overwriting
     if not os.path.exists(existsPath):
-        # shutil.copy(nextArchivePath, nextOutputPathCam)
-        subprocess.call([COPY, nextArchivePath, nextOutputPathCam])
+        shutil.copy(nextArchivePath, nextOutputPathCam)
+        #subprocess.call([COPY, nextArchivePath, nextOutputPathCam])
         print(nextArchivePath)
 
     incrementProgress()
+
+endTime = datetime.datetime.now()
+diffTime = endTime -startTime
+logging.info('Number of copied files %s', getProgress())
+logging.info('--PROCESS FINISHED after %s Seconds', diffTime.total_seconds())
