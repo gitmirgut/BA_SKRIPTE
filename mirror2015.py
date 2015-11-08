@@ -6,10 +6,10 @@
 
 
 import os
-import shutil
-import shelve
 import re
-from bsddb3 import db
+import shelve
+import shutil
+import subprocess
 
 TAR_LIST = list()
 
@@ -17,10 +17,21 @@ TAR_LIST = list()
 # DEST_DIR = '/gfs2/work/bebesook/beesbook_data_2015'
 # STATUSFILE = '/home/b/bebesook/CrayPy2015/Mirror2015.status'
 
-SOURCE_DIR = '/gfs1/work/bebesook/beesbook_data_2015'
-DEST_DIR = '/gfs2/work/bebesook/beesbook_data_2015'
-STATUSFILE = '/home/b/bebesook/CrayPy2015/Mirror2015.status'
+# SOURCE_DIR = '/home/b/beesbook'
+# DEST_DIR = '/gfs2/work/bebesook/beesbook_data_2014'
+# STATUSFILE = '/home/b/bebesook/CrayPy2015/Mirror2014.status'
+
+SOURCE_DIR = '/media/mrpoin/myStorage/BA_SKRIPTE/dummyFiles/gfs1/work/bebesook_data_2014'
+DEST_DIR = '/media/mrpoin/myStorage/BA_SKRIPTE/structure'
+STATUSFILE = '/media/mrpoin/myStorage/BA_SKRIPTE/Mirror2015.status'
 EXT = 'tar'
+PREFIXCAM = 'cam'
+COPY = 'cp'
+MD5SUM = 'md5sum'
+# change to the following line for multi- threaded replacements mcps and msum
+# for single-threaded Linux utilities cp and md5dum
+# COPY = 'mcp'
+# MD5SUM = 'msum'
 
 
 def filterFileName(file):
@@ -30,7 +41,7 @@ def filterFileName(file):
 
 
 def getCam(file):
-    splitted = re.splt('_|\.', 2)
+    splitted = re.split('_|\.', file, 2)
     return splitted[1]
 
 
@@ -52,6 +63,8 @@ def incrementProgress():
     statusShelf['progress'] += 1
     statusShelf.sync()
 
+# enables Multi-threaded Copy and MD5 Checksums
+# module load mutil
 
 # Checks if there is a statusShelf		
 try:
@@ -59,7 +72,7 @@ try:
 except:
     pass
 # If not then initializes one with progress = 0
-if not statusShelf.has_key('progress'):
+if not ('progress' in statusShelf):
     putOnShelf('progress', 0)
 
 TAR_LIST = [file for file in os.listdir(SOURCE_DIR) if filterFileName(file)]
@@ -73,14 +86,22 @@ while len(TAR_LIST) > getProgress():
     nextArchivePath = os.path.join(SOURCE_DIR, nextFile)
     # the first 8 characters correspond to YYYYMMDD
     DAY_DIR = nextFile[:8]
-    # Output path
-    nextOutputPath = os.path.join(DEST_DIR, DAY_DIR)
+    # Path to day dir
+    nextOutputPathDay = os.path.join(DEST_DIR, DAY_DIR)
+    # parses the cam from the filename
+    CAM_DIR = getCam(nextFile)
+    # final Output path
+    nextOutputPathCam = os.path.join(nextOutputPathDay, PREFIXCAM + CAM_DIR)
     # and path to validate if the file was previously copied
-    existsPath = os.path.join(nextOutputPath, nextFile)
-    if not os.path.exists(nextOutputPath):
-        os.mkdir(nextOutputPath)
+    existsPath = os.path.join(nextOutputPathCam, nextFile)
+    if not os.path.exists(nextOutputPathDay):
+        os.mkdir(nextOutputPathDay)
+        # Checks if the file exists to avoid overwriting
+    if not os.path.exists(nextOutputPathCam):
+        os.mkdir(nextOutputPathCam)
         # Checks if the file exists to avoid overwriting
     if not os.path.exists(existsPath):
-        shutil.copy(nextArchivePath, nextOutputPath)
+        # shutil.copy(nextArchivePath, nextOutputPathCam)
+        subprocess.call([COPY, nextArchivePath, nextOutputPathCam])
         print(nextArchivePath)
     incrementProgress()
