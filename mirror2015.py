@@ -5,14 +5,13 @@
 
 
 
+import datetime
+import logging
+import logging.handlers
 import os
 import re
 import shelve
-import shutil
 import subprocess
-import logging
-import logging.handlers
-import datetime
 
 TAR_LIST = list()
 
@@ -34,6 +33,9 @@ PREFIXCAM = 'cam'
 COPY = 'cp'
 MD5SUM = 'md5sum'
 
+# For Testing of MD5sum
+FILEFALSECHECKSUM = '/media/mrpoin/myStorage/BA_SKRIPTE/20140724191905_0.tar'
+
 
 # change to the following line for multi- threaded replacements mcps and msum
 # for single-threaded Linux utilities cp and md5dum
@@ -50,6 +52,11 @@ def filterFileName(file):
 def getCam(file):
     splitted = re.split('_|\.', file, 2)
     return splitted[1]
+
+
+def getMD5sum(output):
+    splitted = output.split(' ', 1)
+    return splitted[0]
 
 
 def putOnShelf(key, value):
@@ -74,7 +81,7 @@ def incrementProgress():
 # Initializes logging
 def initLogging():
     logHandler = logging.handlers.TimedRotatingFileHandler(filename=LOGFILE, when='midnight', backupCount=60)
-    logHandler.setFormatter(logging.Formatter(fmt='[ %(asctime)s ] %(message)s'))
+    logHandler.setFormatter(logging.Formatter(fmt='[%(asctime)s] %(levelname)s - %(message)s'))
     logHandler.setLevel(logging.DEBUG)
     logging.getLogger('').setLevel(logging.DEBUG)
     logging.getLogger('').addHandler(logHandler)
@@ -84,7 +91,7 @@ def initLogging():
 # enables Multi-threaded Copy and MD5 Checksums
 # module load mutil
 
-initLogging( )
+initLogging()
 # Checks if there is a statusShelf
 startTime = datetime.datetime.now()
 
@@ -96,22 +103,32 @@ except:
 # If not then initializes one with progress = 0
 if not ('progress' in statusShelf):
     putOnShelf('progress', 0)
-    logging.info('--START with a new copy process')
+    logging.info('START with a new copy process')
 
 if getProgress() > 0:
     logging.info('Continue with the last copy process')
 
 TAR_LIST = [file for file in os.listdir(SOURCE_DIR) if filterFileName(file)]
+numFiles = str(len(TAR_LIST))
+print(numFiles + 'files to copy')
 TAR_LIST.sort()
 
 # the process is executed for all of the tar files
 while len(TAR_LIST) > getProgress():
+
+    print('\n[' + str(getProgress()) + ' of ' + str(numFiles) + ']')
 
     # gets next file name from the list
     nextFile = TAR_LIST[getProgress()]
 
     # generates the source path
     nextArchivePath = os.path.join(SOURCE_DIR, nextFile)
+    print(nextArchivePath)
+
+    # generates the md5 checksum for the file
+    md5sumOutput = str(subprocess.check_output([MD5SUM, nextArchivePath], universal_newlines=True))
+    md5sumOrg = getMD5sum(md5sumOutput)
+    print(md5sumOrg)
 
     # the first 8 characters correspond to YYYYMMDD
     DAY_DIR = nextFile[:8]
@@ -137,13 +154,30 @@ while len(TAR_LIST) > getProgress():
 
     # Checks if the file exists to avoid overwriting
     if not os.path.exists(existsPath):
-        shutil.copy(nextArchivePath, nextOutputPathCam)
-        #subprocess.call([COPY, nextArchivePath, nextOutputPathCam])
-        print(nextArchivePath)
+
+        # shutil.copy(nextArchivePath, nextOutputPathCam)
+        subprocess.call([COPY, nextArchivePath, nextOutputPathCam])
+
+        # check output path
+        outputFile = os.path.join(nextOutputPathCam, nextFile)
+        print(outputFile)
+
+        # generate MD5sum of the copied file
+        # md5sumOutput = str(subprocess.check_output([MD5SUM, outputFile], universal_newlines=True))
+        md5sumOutput = str(subprocess.check_output([MD5SUM, FILEFALSECHECKSUM], universal_newlines=True))
+        md5sumCp = getMD5sum(md5sumOutput)
+        print(md5sumCp)
+        if md5sumOrg == md5sumCp:
+            print('md5sum OK')
+        else:
+            logging.warning('File Checksum was not correct')
 
     incrementProgress()
 
+# measure the time of the entire process
 endTime = datetime.datetime.now()
-diffTime = endTime -startTime
+diffTime = endTime - startTime
+
 logging.info('Number of copied files %s', getProgress())
-logging.info('--PROCESS FINISHED after %s Seconds', diffTime.total_seconds())
+print(str(getProgress()) + ' files have been copied')
+logging.info('PROCESS FINISHED after %s Seconds', diffTime.total_seconds())
