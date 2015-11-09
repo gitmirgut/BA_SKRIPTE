@@ -25,6 +25,7 @@ TAR_LIST = list()
 # STATUSFILE = '/home/b/bebesook/CrayPy2015/Mirror2014.status'
 
 SOURCE_DIR = '/media/mrpoin/myStorage/BA_SKRIPTE/dummyFiles/gfs1/work/bebesook_data_2014'
+# SOURCE_DIR = '/media/mrpoin/myStorage/BA_SKRIPTE/realData'
 DEST_DIR = '/media/mrpoin/myStorage/BA_SKRIPTE/structure'
 STATUSFILE = '/media/mrpoin/myStorage/BA_SKRIPTE/Mirror2015.status'
 LOGFILE = '/media/mrpoin/myStorage/BA_SKRIPTE/Mirror2015.log'
