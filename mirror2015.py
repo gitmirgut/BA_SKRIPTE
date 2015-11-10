@@ -1,6 +1,6 @@
 # Mirror images 2015 from /gfs1/work/bebesook/beesbook_data_2015 to /gfs2/work/bebesook/beesbook_data_2015
 # One Directory per day
-# Author: ferwar
+# Author: ferwar modified by pst
 # Python 3.4.3
 
 
