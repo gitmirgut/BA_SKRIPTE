@@ -13,6 +13,13 @@ IMG15WORK1 = DEST_DIR + "/gfs1/work/bebesook_data_2015/"
 IMG15WORK2 = DEST_DIR + "/gfs2/work/bebesook/beesbook_data_2015/"
 
 
+def createFile(dirpath, seqNum):
+    filepath = dirpath + incDatetime.strftime('%Y%m%d%H%M%S') + '_' + str(i) + '.tar'
+    newFile = open(filepath, 'w')
+    newFile.write(filepath)
+    newFile.close()
+
+
 # IMAGES 2014
 # /home/b/beesbook/
 # /gfs1/work/bebesook_data_2014/
@@ -23,18 +30,13 @@ ENDDATETIME = datetime.datetime(2014, 7, 24, 19, 20, 5)
 incStep = datetime.timedelta(seconds=1)
 incDatetime = STARTDATETIME
 
-
 os.makedirs(os.path.dirname(IMG14HOME), exist_ok=True)
 os.makedirs(os.path.dirname(IMG14WORK1), exist_ok=True)
 
 for path in [IMG14HOME, IMG14WORK1]:
     while incDatetime <= ENDDATETIME:
         for i in range(4):
-
-            filename = path + incDatetime.strftime('%Y%m%d%H%M%S') + '_' + str(i) + '.tar'
-            f = open(filename, 'w')
-            f.write(filename)
-            f.close()
+            createFile(path, i)
         incDatetime += incStep
     incDatetime = STARTDATETIME
 print('IMAGES 2014 Done!')
@@ -50,11 +52,8 @@ incDatetime = STARTDATETIME  # redundant
 os.makedirs(os.path.dirname(IMG15WORK1), exist_ok=True)
 
 while incDatetime <= ENDDATETIME:
-    for i in range(3):
-        filename = IMG15WORK1 + incDatetime.strftime('%Y%m%d%H%M%S') + '_' + str(i) + '.tar'
-        f = open(filename, 'w')
-        f.write(filename)
-        f.close()
+    for i in range(4):
+        createFile(IMG15WORK1,i)
     incDatetime += incStep
 print('IMAGES 2015 pt.1 Done!')
 
@@ -72,10 +71,8 @@ while incDayDatetime <= ENDDATETIME:
     os.makedirs(os.path.dirname(filepath))
     nextDay = incDayDatetime + incDayStep
     while incDayDatetime < nextDay:
-        for i in range(3):
-            f = open(filepath + incDayDatetime.strftime('%Y%m%d%H%M%S') + '_' + str(i) + '.tar', 'w')
-            f.write(filepath + incDayDatetime.strftime('%Y%m%d%H%M%S') + '_' + str(i) + '.tar')
-            f.close()
+        for i in range(4):
+            createFile(filepath,i)
         incDayDatetime += incHourStep
 print('Fertig!')
 incHourDatetime = STARTDATETIME

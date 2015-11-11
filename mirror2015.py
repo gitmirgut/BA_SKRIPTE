@@ -34,7 +34,7 @@ COPY = 'cp'
 MD5SUM = 'md5sum'
 
 # For Testing of MD5sum
-FILEFALSECHECKSUM = '/media/mrpoin/myStorage/BA_SKRIPTE/20140724191905_0.tar'
+FILEFALSECHECKSUM = '/media/mrpoin/myStorage/BA_SKRIPTE/falseChecksum.tar'
 
 
 # change to the following line for multi- threaded replacements mcps and msum
@@ -79,56 +79,74 @@ def incrementProgress():
 
 
 # Initializes logging
-def initLogging():
-    logHandler = logging.handlers.TimedRotatingFileHandler(filename=LOGFILE, when='midnight', backupCount=60)
-    logHandler.setFormatter(logging.Formatter(fmt='[%(asctime)s] %(levelname)s - %(message)s'))
-    logHandler.setLevel(logging.DEBUG)
-    logging.getLogger('').setLevel(logging.DEBUG)
-    logging.getLogger('').addHandler(logHandler)
-    print('logging to:', LOGFILE)
+# def initLogging():
+#     logHandler = logging.handlers.TimedRotatingFileHandler(filename=LOGFILE, when='midnight', backupCount=60)
+#     logHandler.setFormatter(logging.Formatter(fmt='[%(asctime)s] %(levelname)s - %(message)s'))
+#     logHandler.setLevel(logging.DEBUG)
+#     logging.getLogger('').setLevel(logging.DEBUG)
+#     logging.getLogger('').addHandler(logHandler)
+#     print('logging to:', LOGFILE)
 
 
 # enables Multi-threaded Copy and MD5 Checksums
 # module load mutil
 
-initLogging()
+# initLogging()
+
+logger = logging.getLogger('myLog')
+formatter = logging.Formatter('%(asctime)s | %(levelname)s: %(message)s')
+logger.setLevel(logging.DEBUG)
+
+stream_handler = logging.StreamHandler()
+stream_handler.setLevel(logging.DEBUG)
+stream_handler.setFormatter(formatter)
+
+# logFilePath = "my.log"
+file_handler = logging.handlers.TimedRotatingFileHandler(filename = LOGFILE, when = 'midnight', backupCount = 30)
+file_handler.setLevel(logging.INFO)
+file_handler.setFormatter(formatter)
+
+logger.addHandler(file_handler)
+logger.addHandler(stream_handler)
+
 # Checks if there is a statusShelf
 startTime = datetime.datetime.now()
 
 try:
     statusShelf = shelve.open(STATUSFILE, protocol=0, writeback=True)
-    logging.info('Status file has been opened')
+    logger.info('Status file has been opened')
 except:
     pass
 # If not then initializes one with progress = 0
 if not ('progress' in statusShelf):
     putOnShelf('progress', 0)
-    logging.info('START with a new copy process')
+    logger.info('START with a new copy process')
 
 if getProgress() > 0:
-    logging.info('Continue with the last copy process')
+    logger.info('Continue with the last copy process')
 
 TAR_LIST = [file for file in os.listdir(SOURCE_DIR) if filterFileName(file)]
 numFiles = str(len(TAR_LIST))
-print(numFiles + 'files to copy')
+logger.info(numFiles + 'files to copy')
 TAR_LIST.sort()
 
 # the process is executed for all of the tar files
 while len(TAR_LIST) > getProgress():
 
-    print('\n[' + str(getProgress()) + ' of ' + str(numFiles) + ']')
+    actFile = getProgress() + 1
+    logger.debug('[' + str(actFile) + ' of ' + str(numFiles) + ']')
 
     # gets next file name from the list
     nextFile = TAR_LIST[getProgress()]
 
     # generates the source path
     nextArchivePath = os.path.join(SOURCE_DIR, nextFile)
-    print(nextArchivePath)
+    logger.debug(nextArchivePath)
 
     # generates the md5 checksum for the file
     md5sumOutput = str(subprocess.check_output([MD5SUM, nextArchivePath], universal_newlines=True))
     md5sumOrg = getMD5sum(md5sumOutput)
-    print(md5sumOrg)
+    logger.debug(md5sumOrg)
 
     # the first 8 characters correspond to YYYYMMDD
     DAY_DIR = nextFile[:8]
@@ -145,7 +163,7 @@ while len(TAR_LIST) > getProgress():
     # and path to validate if the file was previously copied
     existsPath = os.path.join(nextOutputPathCam, nextFile)
     if not os.path.exists(nextOutputPathDay):
-        logging.info('Folder %s was created', DAY_DIR)
+        logger.info('Folder %s was created', DAY_DIR)
         os.mkdir(nextOutputPathDay)
 
     # Checks if the file exists to avoid overwriting
@@ -154,23 +172,26 @@ while len(TAR_LIST) > getProgress():
 
     # Checks if the file exists to avoid overwriting
     if not os.path.exists(existsPath):
-
         # shutil.copy(nextArchivePath, nextOutputPathCam)
         subprocess.call([COPY, nextArchivePath, nextOutputPathCam])
 
         # check output path
         outputFile = os.path.join(nextOutputPathCam, nextFile)
-        print(outputFile)
+        logger.debug(outputFile)
 
         # generate MD5sum of the copied file
-        # md5sumOutput = str(subprocess.check_output([MD5SUM, outputFile], universal_newlines=True))
-        md5sumOutput = str(subprocess.check_output([MD5SUM, FILEFALSECHECKSUM], universal_newlines=True))
+        md5sumOutput = str(subprocess.check_output([MD5SUM, outputFile], universal_newlines=True))
+
+        # Just for Testing
+        if getProgress() == 2:
+          md5sumOutput = str(subprocess.check_output([MD5SUM, FILEFALSECHECKSUM], universal_newlines=True))
+
         md5sumCp = getMD5sum(md5sumOutput)
-        print(md5sumCp)
+        logger.debug(md5sumCp)
         if md5sumOrg == md5sumCp:
-            print('md5sum OK')
+            logger.debug('md5sum OK')
         else:
-            logging.warning('File Checksum was not correct')
+            logger.warning('File Checksum of the following File was not correct:' + nextArchivePath)
 
     incrementProgress()
 
@@ -178,6 +199,6 @@ while len(TAR_LIST) > getProgress():
 endTime = datetime.datetime.now()
 diffTime = endTime - startTime
 
-logging.info('Number of copied files %s', getProgress())
-print(str(getProgress()) + ' files have been copied')
-logging.info('PROCESS FINISHED after %s Seconds', diffTime.total_seconds())
+logger.info('Number of copied files %s', getProgress())
+logger.info(str(getProgress()) + ' files have been copied')
+logger.info('PROCESS FINISHED after %s Seconds', diffTime.total_seconds())
