@@ -1,7 +1,6 @@
-# Mirror images 2015 from /gfs1/work/bebesook/beesbook_data_2015 to /gfs2/work/bebesook/beesbook_data_2015
-# One Directory per day
-# Author: ferwar modified by pst
-# Python 3.4.3
+""" sortByDayNCam.py copies YYYYMMDDhhmmss_C.tar-files from SOURCE_DIR to DEST_DIR/YYYYMMDD/camC/YYYYMMDDhhmmss_C.tar
+     Python 3.4.3
+"""
 
 
 
@@ -12,8 +11,9 @@ import os
 import re
 import shelve
 import subprocess
+import csv
 
-TAR_LIST = list()
+
 
 # SOURCE_DIR = '/gfs1/work/bebesook/beesbook_data_2015'
 # DEST_DIR = '/gfs2/work/bebesook/beesbook_data_2015'
@@ -23,19 +23,23 @@ TAR_LIST = list()
 # DEST_DIR = '/gfs2/work/bebesook/beesbook_data_2014'
 # STATUSFILE = '/home/b/bebesook/CrayPy2015/Mirror2014.status'
 
-SOURCE_DIR = '/media/mrpoin/myStorage/BA_SKRIPTE/dummyFiles/gfs1/work/bebesook_data_2014'
-# SOURCE_DIR = '/media/mrpoin/myStorage/BA_SKRIPTE/realData'
-DEST_DIR = '/media/mrpoin/myStorage/BA_SKRIPTE/structure'
-STATUSFILE = '/media/mrpoin/myStorage/BA_SKRIPTE/Mirror2015.status'
-LOGFILE = '/media/mrpoin/myStorage/BA_SKRIPTE/Mirror2015.log'
+# Just for testing
+SOURCE_DIR = './dummyFiles/gfs1/work/bebesook_data_2014'
+# SOURCE_DIR = './realData'
+DEST_DIR = './structure'
+
+if not os.path.exists(DEST_DIR):
+    os.mkdir(DEST_DIR)
+
+
+# STATUSFILE = os.getcwd() + '/Mirror2015.status'
+STATUSFILE = 'Mirror2015.status'
+LOGFILEPATH = 'Mirror2015.log'
+
 EXT = 'tar'
 PREFIXCAM = 'cam'
 COPY = 'cp'
 MD5SUM = 'md5sum'
-
-# For Testing of MD5sum
-FILEFALSECHECKSUM = '/media/mrpoin/myStorage/BA_SKRIPTE/falseChecksum.tar'
-
 
 # change to the following line for multi- threaded replacements mcps and msum
 # for single-threaded Linux utilities cp and md5dum
@@ -78,21 +82,6 @@ def incrementProgress():
     statusShelf.sync()
 
 
-# Initializes logging
-# def initLogging():
-#     logHandler = logging.handlers.TimedRotatingFileHandler(filename=LOGFILE, when='midnight', backupCount=60)
-#     logHandler.setFormatter(logging.Formatter(fmt='[%(asctime)s] %(levelname)s - %(message)s'))
-#     logHandler.setLevel(logging.DEBUG)
-#     logging.getLogger('').setLevel(logging.DEBUG)
-#     logging.getLogger('').addHandler(logHandler)
-#     print('logging to:', LOGFILE)
-
-
-# enables Multi-threaded Copy and MD5 Checksums
-# module load mutil
-
-# initLogging()
-
 logger = logging.getLogger('myLog')
 formatter = logging.Formatter('%(asctime)s | %(levelname)s: %(message)s')
 logger.setLevel(logging.DEBUG)
@@ -102,12 +91,16 @@ stream_handler.setLevel(logging.DEBUG)
 stream_handler.setFormatter(formatter)
 
 # logFilePath = "my.log"
-file_handler = logging.handlers.TimedRotatingFileHandler(filename = LOGFILE, when = 'midnight', backupCount = 30)
+file_handler = logging.handlers.TimedRotatingFileHandler(filename = LOGFILEPATH, when ='midnight', backupCount = 30)
 file_handler.setLevel(logging.INFO)
 file_handler.setFormatter(formatter)
 
 logger.addHandler(file_handler)
 logger.addHandler(stream_handler)
+
+
+
+
 
 # Checks if there is a statusShelf
 startTime = datetime.datetime.now()
@@ -183,8 +176,8 @@ while len(TAR_LIST) > getProgress():
         md5sumOutput = str(subprocess.check_output([MD5SUM, outputFile], universal_newlines=True))
 
         # Just for Testing
-        if getProgress() == 2:
-          md5sumOutput = str(subprocess.check_output([MD5SUM, FILEFALSECHECKSUM], universal_newlines=True))
+        if (getProgress() == 2) | (getProgress() == 5):
+          md5sumOutput = "e62766ec7a443d346858b3faec2e5c4b"
 
         md5sumCp = getMD5sum(md5sumOutput)
         logger.debug(md5sumCp)
@@ -192,6 +185,12 @@ while len(TAR_LIST) > getProgress():
             logger.debug('md5sum OK')
         else:
             logger.warning('File Checksum of the following File was not correct:' + nextArchivePath)
+
+            # Open csv for saving copied files with false checksums
+            falseChecksumFile = open('falseChecksum.csv', 'a')
+            falseChecksumWriter = csv.writer(falseChecksumFile)
+            falseChecksumWriter.writerow([nextArchivePath])
+            falseChecksumFile.close()
 
     incrementProgress()
 
@@ -202,3 +201,5 @@ diffTime = endTime - startTime
 logger.info('Number of copied files %s', getProgress())
 logger.info(str(getProgress()) + ' files have been copied')
 logger.info('PROCESS FINISHED after %s Seconds', diffTime.total_seconds())
+
+

@@ -1,4 +1,3 @@
-# !python
 import os, datetime, time
 
 DEST_DIR = os.getcwd() + "/dummyFiles"
