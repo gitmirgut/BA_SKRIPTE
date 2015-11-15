@@ -27,7 +27,7 @@ def md5py(filename, blocksize=128):
     :return: md5 hash of the file
     """
     m = hashlib.md5()
-    with open(filename, "rb") as f:
+    with open(filename, "r") as f:
         while True:
             buf = f.read(blocksize)
             if not buf:

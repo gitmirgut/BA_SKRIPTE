@@ -15,6 +15,7 @@ import csv
 
 
 
+
 # SOURCE_DIR = '/gfs1/work/bebesook/beesbook_data_2015'
 # DEST_DIR = '/gfs2/work/bebesook/beesbook_data_2015'
 # STATUSFILE = '/home/b/bebesook/CrayPy2015/Mirror2015.status'
