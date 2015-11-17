@@ -19,8 +19,8 @@ import subprocess
 
 MD5SUM_OPT =['md5sum']
 
-def get_MD5_sum(file):
-    cmd_md5sum = MD5SUM_OPT + [file]
+def get_MD5_sum(file, cmd):
+    cmd_md5sum = cmd + [file]
     output = str(subprocess.check_output(cmd_md5sum, universal_newlines=True))
     md5sum = output.split(' ', 1)
     return md5sum[0]
@@ -49,7 +49,7 @@ for i in range(1,8):
     threads_list = threads_list + ['--threads=' + str(2**i)]
 
 for b in buffer_size_list:
-    cmd_buffer_size = msum_list
+    # cmd_buffer_size = msum_list
     cmd_buffer_size = msum_list + [b]
     csv_buffer_size = cmd_buffer_size
 
@@ -66,18 +66,20 @@ for b in buffer_size_list:
             csv_double_buffer = csv_direct_read + [db]
 
             for s in split_size_list:
-                cmd_split_size = cmd_double_buffer
+                # cmd_split_size = cmd_double_buffer
                 cmd_split_size = cmd_double_buffer + [s]
                 csv_split_size = csv_double_buffer + [s]
 
                 for t in threads_list:
-                    cmd_threads = cmd_split_size
+                    # cmd_threads = cmd_split_size
                     cmd_threads = cmd_split_size + [t]
                     csv_threads = csv_split_size + [t]
-                    # t1 = timeit.Timer("get_MD5_sum(\'Mirror2015.log\')",
-                    #                   setup="from __main__ import get_MD5_sum")
-                    # time = t1.timeit(10)
-                    # cases_writer.writerow(csv_threads+ [time])
+                    stmt = "get_MD5_sum(\'20151024192956_2.tar\', cmd_threads)"
+                    setup = "from __main__ import get_MD5_sum, cmd_threads"
+                    t1 = timeit.Timer(stmt=stmt,setup=setup)
+                    time = t1.timeit(2)
+                    print("cmd: " + str(cmd_threads) +"| time :" +  str(time))
+                    cases_writer.writerow(csv_threads+ [time])
                     all_combinations = all_combinations +[[cmd_threads]]
 
 print(str(len(all_combinations)))

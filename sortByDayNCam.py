@@ -9,8 +9,8 @@ import logging.handlers
 import os
 import re
 import shelve
-import subprocess
 import csv
+import copy_verify
 
 # SOURCE_DIR = '/gfs1/work/bebesook/beesbook_data_2015'
 # DEST_DIR = '/gfs2/work/bebesook/beesbook_data_2015'
@@ -21,8 +21,8 @@ import csv
 # STATUSFILE = '/home/b/bebesook/CrayPy2015/Mirror2014.status'
 
 # Just for testing
-# SOURCE_DIR = './dummyFiles/gfs1/work/bebesook_data_2014'
-SOURCE_DIR = './realData'x
+#SOURCE_DIR = './dummyFiles/gfs1/work/bebesook_data_2014'
+SOURCE_DIR = './realData'
 TARGET_DIR = './structure'
 
 if not os.path.exists(TARGET_DIR):
@@ -33,29 +33,10 @@ LOGFILEPATH = 'Mirror2015.log'
 
 EXT = '.tar'
 PREFIX_CAM = 'cam'
-MD5SUM_OPT = ['md5sum']
-CP_OPT = ['cp']
-# change to the following line for multi- threaded replacements mcps and msum
-# for single-threaded Linux utilities cp and md5dum
-# MD5SUM_CMD = ['msum', '--buffer-size=128', '--direct-read',
-#               '--double-buffer', '--split-size=256', '--threads=128']
 
 def get_cam(file):
     splitted = re.split('_|\.', file, 2)
     return splitted[1]
-
-
-def get_MD5_sum(file):
-    cmd_md5sum = MD5SUM_OPT + [file]
-    output = str(subprocess.check_output(cmd_md5sum, universal_newlines=True))
-    md5sum = output.split(' ', 1)
-    return md5sum[0]
-
-
-def cp_copy(src, dst):
-    cmd_cp = CP_OPT + [src] + [dst]
-    subprocess.call(cmd_cp)
-
 
 def put_on_shelf(key, value):
     statusShelf[key] = value
@@ -105,6 +86,7 @@ if get_progress() > 0:
     logger.info('Continue with the last copy process')
 
 tar_list = [file for file in os.listdir(SOURCE_DIR) if file.endswith(EXT)]
+print(tar_list)
 num_files = len(tar_list)
 
 left_files = num_files - int(get_progress())
@@ -151,7 +133,14 @@ while len(tar_list) > get_progress():
     # Checks if the file exists to avoid overwriting
     if not os.path.exists(dst_file):
         # shutil.copy(nextArchivePath, nextOutputPathCam)
-        cp_copy(src_file, dst_file)
+        check_md5sum = copy_verify.single_threaded_copy_verify(src_file,
+                                                              dst_file)
+
+        if check_md5sum:
+            logger.debug('md5sum OK')
+        else:
+            logger.warning('hash of the following file is not correct:' +
+                           src_file)
 
         # check output path
         logger.debug('dst: ' + dst_file + ' created')
@@ -159,17 +148,12 @@ while len(tar_list) > get_progress():
         logger.info(src_file + ' was not copied to  ' + dst_file + ' (file '
                                                                    'already '
                                                                    'exists')
-    # generates the md5 checksum for the file
-    md5sum_src = get_MD5_sum(src_file)
-    md5sum_dst = get_MD5_sum(dst_file)
-    logger.debug('md5sum of src:' + md5sum_src)
-    logger.debug('md5sum of dst:' + md5sum_dst)
-    if md5sum_src == md5sum_dst:
-        logger.debug('md5sum OK')
-    else:
-        logger.warning(
-            'hash of the following file is not correct:' +
-            src_file)
+    # # generates the md5 checksum for the file
+    # md5sum_src = copy_verify.md5sum(src_file)
+    # md5sum_dst = copy_verify.md5sum(dst_file)
+    # logger.debug('md5sum of src:' + md5sum_src)
+    # logger.debug('md5sum of dst:' + md5sum_dst)
+
 
         # Open csv for saving copied files with false checksums
         false_checksum_file = open('falseChecksum.csv', 'a')
