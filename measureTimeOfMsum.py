@@ -49,7 +49,6 @@ for i in range(1,8):
     threads_list = threads_list + ['--threads=' + str(2**i)]
 
 for b in buffer_size_list:
-    # cmd_buffer_size = msum_list
     cmd_buffer_size = msum_list + [b]
     csv_buffer_size = cmd_buffer_size
 

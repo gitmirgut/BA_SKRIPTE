@@ -11,6 +11,7 @@ import re
 import shelve
 import csv
 import copy_verify
+import sys
 
 # SOURCE_DIR = '/gfs1/work/bebesook/beesbook_data_2015'
 # DEST_DIR = '/gfs2/work/bebesook/beesbook_data_2015'
@@ -21,7 +22,7 @@ import copy_verify
 # STATUSFILE = '/home/b/bebesook/CrayPy2015/Mirror2014.status'
 
 # Just for testing
-#SOURCE_DIR = './dummyFiles/gfs1/work/bebesook_data_2014'
+# SOURCE_DIR = './dummyFiles/gfs1/work/bebesook_data_2014'
 SOURCE_DIR = './realData'
 TARGET_DIR = './structure'
 
@@ -34,9 +35,19 @@ LOGFILEPATH = 'Mirror2015.log'
 EXT = '.tar'
 PREFIX_CAM = 'cam'
 
-def get_cam(file):
-    splitted = re.split('_|\.', file, 2)
-    return splitted[1]
+
+def get_cam(file_name):
+    split = re.split('_|\.', file_name, 2)
+    return split[1]
+
+
+def append_false_checksum(file_name):
+    # Open csv for saving copied files with false checksums
+    false_checksum_file = open('falseChecksum.csv', 'a')
+    false_checksum_writer = csv.writer(false_checksum_file)
+    false_checksum_writer.writerow([file_name])
+    false_checksum_file.close()
+
 
 def put_on_shelf(key, value):
     statusShelf[key] = value
@@ -76,7 +87,9 @@ try:
     statusShelf = shelve.open(STATUSFILE, protocol=0, writeback=True)
     logger.info('Status file has been opened')
 except:
-    pass
+    logger.warning('Status file cannot be opened')
+    sys.exit('Status file cannot be opened')
+
 # If not then initializes one with progress = 0
 if not ('progress' in statusShelf):
     put_on_shelf('progress', 0)
@@ -86,7 +99,7 @@ if get_progress() > 0:
     logger.info('Continue with the last copy process')
 
 tar_list = [file for file in os.listdir(SOURCE_DIR) if file.endswith(EXT)]
-print(tar_list)
+
 num_files = len(tar_list)
 
 left_files = num_files - int(get_progress())
@@ -106,7 +119,7 @@ while len(tar_list) > get_progress():
 
     # generates the source path to file
     src_file = os.path.join(SOURCE_DIR, next_file)
-    logger.debug('src:' + src_file)
+    logger.debug('src: ' + src_file)
 
     # the first 8 characters correspond to YYYYMMDD
     day = next_file[:8]
@@ -126,15 +139,18 @@ while len(tar_list) > get_progress():
         logger.info('Folder %s created', day)
         os.mkdir(day_dir)
 
-    # Checks if the file exists to avoid overwriting
+    # Checks if the dir exists to avoid overwriting
     if not os.path.exists(dst_dir):
         os.mkdir(dst_dir)
 
     # Checks if the file exists to avoid overwriting
     if not os.path.exists(dst_file):
-        # shutil.copy(nextArchivePath, nextOutputPathCam)
+
         check_md5sum = copy_verify.single_threaded_copy_verify(src_file,
-                                                              dst_file)
+                                                               dst_file)
+
+        # check output path
+        logger.debug('dst: ' + dst_file + ' created')
 
         if check_md5sum:
             logger.debug('md5sum OK')
@@ -142,24 +158,19 @@ while len(tar_list) > get_progress():
             logger.warning('hash of the following file is not correct:' +
                            src_file)
 
-        # check output path
-        logger.debug('dst: ' + dst_file + ' created')
+            # Open csv for saving copied files with false checksums
+            append_false_checksum(src_file)
+
     else:
         logger.info(src_file + ' was not copied to  ' + dst_file + ' (file '
                                                                    'already '
-                                                                   'exists')
-    # # generates the md5 checksum for the file
-    # md5sum_src = copy_verify.md5sum(src_file)
-    # md5sum_dst = copy_verify.md5sum(dst_file)
-    # logger.debug('md5sum of src:' + md5sum_src)
-    # logger.debug('md5sum of dst:' + md5sum_dst)
-
-
-        # Open csv for saving copied files with false checksums
-        false_checksum_file = open('falseChecksum.csv', 'a')
-        false_checksum_writer = csv.writer(false_checksum_file)
-        false_checksum_writer.writerow([src_file])
-        false_checksum_file.close()
+                                                                   'exists)')
+        if copy_verify.md5sum(src_file) == copy_verify.md5sum(dst_file):
+            logger.info('md5sum of existing file OK')
+        else:
+            logger.warning('md5sum of existing file was not correct, copy of '
+                           + src_file + ' was not successful')
+            append_false_checksum(src_file)
 
     increment_progress()
 

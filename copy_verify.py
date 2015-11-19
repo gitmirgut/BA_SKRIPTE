@@ -1,9 +1,10 @@
 '''
-
+computes the md5sum of file or makes a verified copy
 '''
 
 import subprocess
 import os
+import hashlib
 
 MCP_OPTIONS = []
 MSUM_OPTIONS = []
@@ -33,6 +34,22 @@ def md5sum(file):
     cmd = ['md5sum'] + [file]
     out = str(subprocess.check_output(cmd, universal_newlines=True))
     return __parse_MD5sum(out)
+
+def md5py(filename, blocksize=128):
+    """
+    Returns MD5 (128-bit) checksum of file.
+    Makes use of hashlib module
+
+    :return: md5 hash of the file
+    """
+    m = hashlib.md5()
+    with open(filename, "r") as f:
+        while True:
+            buf = f.read(blocksize)
+            if not buf:
+                break
+            m.update(buf)
+    return m.hexdigest()
 
 
 def mcp(src, dst):
@@ -109,6 +126,6 @@ def multi_threaded_copy_verify(src, dst):
             return True
     elif os.path.isdir(dst):
         dst_file = os.path.join(dst, os.path.basename(src))
-        if md5sum_src == msum(dst):
+        if md5sum_src == msum(dst_file):
             return True
     return False

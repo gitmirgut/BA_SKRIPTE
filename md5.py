@@ -10,10 +10,10 @@ def __getMD5sum(output):
     return splitted[0]
 
 
-
 def md5sum(filename):
     """
-    calculates 128-bit MD5 hashes, with the default installed md5sum program of LINUX
+    calculates 128-bit MD5 hashes, with the default installed md5sum program of
+    LINUX
     :return: md5 hash of the file
     """
     md5sum = str(subprocess.check_output(["md5sum", filename], universal_newlines=True))
@@ -34,4 +34,4 @@ def md5py(filename, blocksize=128):
                 break
             m.update(buf)
     return m.hexdigest()
-
+    
