@@ -13,7 +13,8 @@ IMG15WORK2 = DEST_DIR + "/gfs2/work/bebesook/beesbook_data_2015/"
 
 
 def createFile(dirpath, seqNum):
-    filepath = dirpath + incDatetime.strftime('%Y%m%d%H%M%S') + '_' + str(i) + '.tar'
+    filepath = dirpath + incDatetime.strftime('%Y%m%d%H%M%S') + '_' + str(i) + \
+               '.tar'
     newFile = open(filepath, 'w')
     newFile.write(filepath)
     newFile.close()
