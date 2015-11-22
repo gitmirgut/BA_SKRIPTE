@@ -1,6 +1,6 @@
 import os, datetime, time
 
-DEST_DIR = os.getcwd() + "/dummyFiles"
+DEST_DIR = './dummyFiles'
 # IMAGES 2014 PATH
 IMG14HOME = DEST_DIR + "/home/b/beesbook/"
 IMG14WORK1 = DEST_DIR + "/gfs1/work/bebesook_data_2014/"
@@ -23,8 +23,8 @@ def createFile(dirpath, seqNum):
 # IMAGES 2014
 # /home/b/beesbook/
 # /gfs1/work/bebesook_data_2014/
-STARTDATETIME = datetime.datetime(2014, 7, 24, 19, 19, 5)
-ENDDATETIME = datetime.datetime(2014, 7, 24, 19, 20, 5)
+STARTDATETIME = datetime.datetime(2014, 7, 24, 23, 59, 30)
+ENDDATETIME = datetime.datetime(2014, 7, 25, 0, 0, 30)
 # ENDDATETIME = datetime.datetime(2014, 9, 25, 12, 0, 0)
 
 incStep = datetime.timedelta(seconds=1)

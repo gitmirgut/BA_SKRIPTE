@@ -22,8 +22,8 @@ import copy_verify
 # STATUSFILE = '/home/b/bebesook/CrayPy2015/Mirror2014.status'
 
 # Just for testing
-# SOURCE_DIR = './dummyFiles/gfs1/work/bebesook_data_2014'
-SOURCE_DIR = './realData'
+SOURCE_DIR = './dummyFiles/gfs1/work/bebesook_data_2014'
+# SOURCE_DIR = './realData'
 DESTINATION_DIR = './structure'
 
 

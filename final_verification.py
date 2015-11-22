@@ -1,8 +1,8 @@
 import os
 import hashlib
 
-# SOURCE_DIR = './dummyFiles/gfs1/work/bebesook_data_2014'
-SOURCE_DIR = './realData'
+SOURCE_DIR = './dummyFiles/gfs1/work/bebesook_data_2014'
+# SOURCE_DIR = './realData'
 DESTINATION_DIR = './structure'
 
 EXT = '.tar'
