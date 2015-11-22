@@ -19,6 +19,7 @@ import subprocess
 
 MD5SUM_OPT =['md5sum']
 
+
 def get_MD5_sum(file, cmd):
     cmd_md5sum = cmd + [file]
     output = str(subprocess.check_output(cmd_md5sum, universal_newlines=True))

@@ -1,6 +1,6 @@
 """ sortByDayNCam.py copies YYYYMMDDhhmmss_C.tar-files from SOURCE_DIR to
     DEST_DIR/YYYYMMDD/camC/YYYYMMDDhhmmss_C.tar
-     Python 3.4.3
+    Python 3.4.3
 """
 
 import datetime
@@ -11,23 +11,22 @@ import re
 import shelve
 import csv
 import copy_verify
-import sys
+
 
 # SOURCE_DIR = '/gfs1/work/bebesook/beesbook_data_2015'
-# DEST_DIR = '/gfs2/work/bebesook/beesbook_data_2015'
+# DESTINATION_DIR = '/gfs2/work/bebesook/beesbook_data_2015'
 # STATUSFILE = '/home/b/bebesook/CrayPy2015/Mirror2015.status'
 
 # SOURCE_DIR = '/home/b/beesbook'
-# DEST_DIR = '/gfs2/work/bebesook/beesbook_data_2014'
+# DESTINATION_DIR = '/gfs2/work/bebesook/beesbook_data_2014'
 # STATUSFILE = '/home/b/bebesook/CrayPy2015/Mirror2014.status'
 
 # Just for testing
 # SOURCE_DIR = './dummyFiles/gfs1/work/bebesook_data_2014'
 SOURCE_DIR = './realData'
-TARGET_DIR = './structure'
+DESTINATION_DIR = './structure'
 
-if not os.path.exists(TARGET_DIR):
-    os.mkdir(TARGET_DIR)
+
 
 STATUSFILE = 'Mirror2015.status'
 LOGFILEPATH = 'Mirror2015.log'
@@ -62,6 +61,12 @@ def increment_progress():
     statusShelf['progress'] += 1
     statusShelf.sync()
 
+# Initialize logger with two handlers, where each handler has a different
+# level, so that the more important logs will be writen to file and the
+# unimportant logs for debug will just will be shown on console output and
+# can be disabled by
+# logging.disable(logging.DEBUG)
+
 logger = logging.getLogger('myLog')
 formatter = logging.Formatter('%(asctime)s | %(levelname)s: %(message)s')
 logger.setLevel(logging.DEBUG)
@@ -80,15 +85,19 @@ file_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
 logger.addHandler(stream_handler)
 
+
+################################################################################
+# Start
+################################################################################
+
 startTime = datetime.datetime.now()
 
+if not os.path.exists(DESTINATION_DIR):
+    os.mkdir(DESTINATION_DIR)
+
 # Checks if there is a statusShelf
-try:
-    statusShelf = shelve.open(STATUSFILE, protocol=0, writeback=True)
-    logger.info('Status file has been opened')
-except:
-    logger.warning('Status file cannot be opened')
-    sys.exit('Status file cannot be opened')
+statusShelf = shelve.open(STATUSFILE, protocol=0, writeback=True)
+logger.info('Status file has been opened')
 
 # If not then initializes one with progress = 0
 if not ('progress' in statusShelf):
@@ -111,6 +120,7 @@ tar_list.sort()
 # the process is executed for all of the tar files
 while len(tar_list) > get_progress():
 
+    # writes progress to logger
     act_file = get_progress() + 1
     logger.debug('[' + str(act_file) + ' of ' + str(num_files) + ']')
 
@@ -125,7 +135,7 @@ while len(tar_list) > get_progress():
     day = next_file[:8]
 
     # Path to day dir
-    day_dir = os.path.join(TARGET_DIR, day)
+    day_dir = os.path.join(DESTINATION_DIR, day)
 
     # parses the cam from the filename
     cam_dir = get_cam(next_file)
@@ -146,7 +156,7 @@ while len(tar_list) > get_progress():
     # Checks if the file exists to avoid overwriting
     if not os.path.exists(dst_file):
 
-        check_md5sum = copy_verify.single_threaded_copy_verify(src_file,
+        check_md5sum = copy_verify.single_threaded_copy_verify_py(src_file,
                                                                dst_file)
 
         # check output path
@@ -165,7 +175,7 @@ while len(tar_list) > get_progress():
         logger.info(src_file + ' was not copied to  ' + dst_file + ' (file '
                                                                    'already '
                                                                    'exists)')
-        if copy_verify.md5sum(src_file) == copy_verify.md5sum(dst_file):
+        if copy_verify.md5sum_py(src_file) == copy_verify.md5sum_py(dst_file):
             logger.info('md5sum of existing file OK')
         else:
             logger.warning('md5sum of existing file was not correct, copy of '

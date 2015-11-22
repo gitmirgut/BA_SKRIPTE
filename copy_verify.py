@@ -5,15 +5,19 @@ computes the md5sum of file or makes a verified copy
 import subprocess
 import os
 import hashlib
+import shutil
 
 MCP_OPTIONS = []
 MSUM_OPTIONS = []
 
 
 def __parse_MD5sum(output):
-    splitted = output.split(' ', 1)
-    return splitted[0]
+    split = output.split(' ', 1)
+    return split[0]
 
+################################################################################
+# copy and hashsum based on Linux utilities
+################################################################################
 
 def cp(src, dst):
     '''
@@ -35,10 +39,44 @@ def md5sum(file):
     out = str(subprocess.check_output(cmd, universal_newlines=True))
     return __parse_MD5sum(out)
 
-def md5py(filename, blocksize=128):
+
+def single_threaded_copy_verify(src, dst):
+    '''
+    Copy (single) src to dst and verify file after copy with md5sum.
+    Makes use of single-threaded Linux utilities cp and md5sum.
+
+    :return: True, if hash of source file and destination file are equal;
+    False otherwise
+    '''
+    cp(src, dst)
+    if os.path.isfile(dst):
+        if md5sum(src) == md5sum(dst):
+            return True
+    elif os.path.isdir(dst):
+        dst_file = os.path.join(dst, os.path.basename(src))
+        if md5sum(src) == md5sum(dst_file):
+            return True
+    return False
+
+################################################################################
+# copy and hashsum based on python modules
+################################################################################
+
+
+def cp_py(src, dst):
+    '''
+    Copy (single) src to dst.
+    Makes use of shutil module (python).
+    :param src: source file
+    :param dst: destination file / directory
+    '''
+    shutil.copy(src, dst)
+
+
+def md5sum_py(filename, blocksize=128):
     """
     Returns MD5 (128-bit) checksum of file.
-    Makes use of hashlib module
+    Makes use of hashlib module (python).
 
     :return: md5 hash of the file
     """
@@ -51,6 +89,28 @@ def md5py(filename, blocksize=128):
             m.update(buf)
     return m.hexdigest()
 
+
+def single_threaded_copy_verify_py(src, dst):
+    '''
+    Copy (single) src to dst and verify file after copy with md5sum.
+    Makes use of python modules hashlib and shutil.
+
+    :return: True, if hash of source file and destination file are equal;
+    False otherwise
+    '''
+    cp_py(src, dst)
+    if os.path.isfile(dst):
+        if md5sum_py(src) == md5sum_py(dst):
+            return True
+    elif os.path.isdir(dst):
+        dst_file = os.path.join(dst, os.path.basename(src))
+        if md5sum_py(src) == md5sum_py(dst_file):
+            return True
+    return False
+
+################################################################################
+# copy and hashsum based on multi-threaded replacements of 'module mutil'
+################################################################################
 
 def mcp(src, dst):
     '''
@@ -90,25 +150,6 @@ def msum(file):
     cmd = ['msum'] + MSUM_OPTIONS + [file]
     out = str(subprocess.check_output(cmd, universal_newlines=True))
     return __parse_MD5sum(out)
-
-
-def single_threaded_copy_verify(src, dst):
-    '''
-    Copy (single) src to dst and verify file after copy with md5sum.
-    Makes use of single-threaded Linux utilities cp and md5sum.
-
-    :return: True, if hash of source file and destination file are equal;
-    False otherwise
-    '''
-    cp(src, dst)
-    if os.path.isfile(dst):
-        if md5sum(src) == md5sum(dst):
-            return True
-    elif os.path.isdir(dst):
-        dst_file = os.path.join(dst, os.path.basename(src))
-        if md5sum(src) == md5sum(dst_file):
-            return True
-    return False
 
 
 def multi_threaded_copy_verify(src, dst):
