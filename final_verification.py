@@ -37,9 +37,9 @@ def check_integrity(src, dst):
     WARNING: the integrity of file content, has to be checked separately
     '''
     src_sum = hashlib.md5(list_to_string(__get_all_filenames(
-    src))).hexdigest()
+    src)).encode('utf-8')).hexdigest()
     dst_sum = hashlib.md5(list_to_string(__get_all_filenames(
-    dst))).hexdigest()
+    dst)).encode('utf-8')).hexdigest()
     if src_sum == dst_sum:
         return True
     return False
