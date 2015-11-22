@@ -11,6 +11,7 @@ $ python3.3.3 CreateDummyFiles.py
 ```
 
 1. Kopieren von '/home/b/beesbook' nach Ziel-Ordner
+2. Halli 
 
     ```
       $ python3.3.3 sortByDayNCam.py 
