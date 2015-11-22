@@ -1,5 +1,3 @@
-# BA_SKRIPTE
-
 ## Ablauf
 - Laden von python3.3.3
 ```sh
