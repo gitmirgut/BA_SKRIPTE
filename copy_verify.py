@@ -86,7 +86,7 @@ def md5sum_py(filename, blocksize=128):
             buf = f.read(blocksize)
             if not buf:
                 break
-            m.update(buf)
+            m.update(buf.encode('utf-8'))
     return m.hexdigest()
 
 
