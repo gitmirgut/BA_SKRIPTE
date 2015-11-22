@@ -1,6 +1,6 @@
 """ sortByDayNCam.py copies YYYYMMDDhhmmss_C.tar-files from SOURCE_DIR to
     DEST_DIR/YYYYMMDD/camC/YYYYMMDDhhmmss_C.tar
-    Python 3.4.3
+    Python 3.3.3
 """
 
 import datetime
