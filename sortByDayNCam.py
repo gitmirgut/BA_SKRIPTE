@@ -11,6 +11,7 @@ import re
 import shelve
 import csv
 import copy_verify
+import filecmp
 
 
 # SOURCE_DIR = '/gfs1/work/bebesook/beesbook_data_2015'
@@ -18,12 +19,14 @@ import copy_verify
 # STATUSFILE = '/home/b/bebesook/CrayPy2015/Mirror2015.status'
 
 # SOURCE_DIR = '/home/b/beesbook'
-# DESTINATION_DIR = '/gfs2/work/bebesook/beesbook_data_2014'
+# DESTINATION_DIR = '/gfs1/work/bebesook/beesbook_data_2014'
 # STATUSFILE = '/home/b/bebesook/CrayPy2015/Mirror2014.status'
 
 # Just for testing
-SOURCE_DIR = './dummyFiles/gfs1/work/bebesook_data_2014'
-# SOURCE_DIR = './realData'
+# SOURCE_DIR = '/gfs1/work/bebesook/beesbook_data_test'
+# SOURCE_DIR = './dummyFiles/gfs1/work/bebesook/beesbook_data_2014'
+SOURCE_DIR = './real'
+# DESTINATION_DIR = '/gfs1/work/bebesook/beesbook_data_test_structured'
 DESTINATION_DIR = './structure'
 
 
@@ -156,26 +159,27 @@ while len(tar_list) > get_progress():
     # Checks if the file exists to avoid overwriting
     if not os.path.exists(dst_file):
 
-        check_md5sum = copy_verify.single_threaded_copy_verify_py(src_file,
-                                                               dst_file)
-
-        # check output path
-        logger.debug('dst: ' + dst_file + ' created')
-
-        if check_md5sum:
-            logger.debug('md5sum OK')
-        else:
-            logger.warning('hash of the following file is not correct:' +
-                           src_file)
-
-            # Open csv for saving copied files with false checksums
-            append_false_checksum(src_file)
+        copy_verify.cp_py(src_file,dst_file)
+        # check_md5sum = copy_verify.single_threaded_copy_verify_py_cmp(src_file,
+        #                                                               dst_file)
+        # # check output path
+        # logger.debug('dst: ' + dst_file + ' created')
+        #
+        # if check_md5sum:
+        #     logger.debug('md5sum OK')
+        # else:
+        #     logger.warning('hash of the following file is not correct:' +
+        #                    src_file)
+        #
+        #     # Open csv for saving copied files with false checksums
+        #     append_false_checksum(src_file)
 
     else:
         logger.info(src_file + ' was not copied to  ' + dst_file + ' (file '
                                                                    'already '
                                                                    'exists)')
-        if copy_verify.md5sum_py(src_file) == copy_verify.md5sum_py(dst_file):
+        # if copy_verify.md5sum_py(src_file) == copy_verify.md5sum_py(dst_file):
+        if filecmp.cmp(src_file,dst_file):
             logger.info('md5sum of existing file OK')
         else:
             logger.warning('md5sum of existing file was not correct, copy of '

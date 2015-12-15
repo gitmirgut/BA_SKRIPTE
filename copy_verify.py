@@ -6,7 +6,8 @@ import subprocess
 import os
 import hashlib
 import shutil
-
+import timeit
+import filecmp
 MCP_OPTIONS = []
 MSUM_OPTIONS = []
 
@@ -81,16 +82,16 @@ def md5sum_py(filename, blocksize=128):
     :return: md5 hash of the file
     """
     m = hashlib.md5()
-    with open(filename, "r") as f:
+    with open(filename, "rb") as f:
         while True:
             buf = f.read(blocksize)
             if not buf:
                 break
-            m.update(buf.encode('utf-8'))
+            m.update(buf)
     return m.hexdigest()
 
 
-def single_threaded_copy_verify_py(src, dst):
+def single_threaded_copy_verify_py_md5(src, dst):
     '''
     Copy (single) src to dst and verify file after copy with md5sum.
     Makes use of python modules hashlib and shutil.
@@ -106,6 +107,23 @@ def single_threaded_copy_verify_py(src, dst):
         dst_file = os.path.join(dst, os.path.basename(src))
         if md5sum_py(src) == md5sum_py(dst_file):
             return True
+    return False
+
+
+def single_threaded_copy_verify_py_cmp(src, dst):
+    '''
+    Copy (single) src to dst and verify file after copy with filecmp.cmp.
+    Makes use of python modules filecmp and shutil.
+
+    :return: True, if files are equal;
+    False otherwise
+    '''
+    cp_py(src, dst)
+    if os.path.isfile(dst):
+        return filecmp.cmp(src, dst, shallow=False)
+    elif os.path.isdir(dst):
+        dst_file = os.path.join(dst, os.path.basename(src))
+        return filecmp.cmp(src, dst_file, shallow=False)
     return False
 
 ################################################################################
@@ -170,3 +188,44 @@ def multi_threaded_copy_verify(src, dst):
         if md5sum_src == msum(dst_file):
             return True
     return False
+
+def file_cmp(src, dst):
+    return filecmp.cmp(src, dst, shallow=False)
+
+# t2 = timeit.Timer("cp_py(\'./realData/20151024192956_2.tar\',"
+#                   "\'test.tar\')",
+#                   "from __main__ import cp_py")
+# time2 = t2.timeit(10)
+# print('cp_py')
+# print(time2)
+#
+# t2 = timeit.Timer("single_threaded_copy_verify_py_cmp(\'./realData/20151024192956_2.tar\',"
+#                   "\'test.tar\')",
+#                   "from __main__ import single_threaded_copy_verify_py_cmp")
+# time2 = t2.timeit(10)
+# print('cmp_py')
+# print(time2)
+# t2 = timeit.Timer("single_threaded_copy_verify_py(\'./realData/20151024192956_2.tar\',"
+#                   "\'test.tar\')",
+#                   "from __main__ import single_threaded_copy_verify_py")
+# time2 = t2.timeit(10)
+# print('md5_cp_py')
+# print(time2)
+# t2 = timeit.Timer("md5sum(\'./realData/20151024192956_2.tar\')",
+#                   "from __main__ import md5sum")
+# time2 = t2.timeit(10)
+# print('md5sum')
+# print(time2)
+# t2 = timeit.Timer("file_cmp(\'./realData/20151024192956_2.tar\',"
+#                   "\'test.tar\')",
+#                   "from __main__ import file_cmp")
+# time2 = t2.timeit(10)
+# print('file_cmp')
+# print(time2)
+# t2 = timeit.Timer("md5sum_py(\'./realData/20151024192956_2.tar\')",
+#                   "from __main__ import md5sum_py")
+# time2 = t2.timeit(10)
+# print('md5sum_py')
+# print(time2)
+#
+#

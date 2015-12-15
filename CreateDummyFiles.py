@@ -3,10 +3,10 @@ import os, datetime, time
 DEST_DIR = './dummyFiles'
 # IMAGES 2014 PATH
 IMG14HOME = DEST_DIR + "/home/b/beesbook/"
-IMG14WORK1 = DEST_DIR + "/gfs1/work/bebesook_data_2014/"
+IMG14WORK1 = DEST_DIR + "/gfs1/work/bebesook/beesbook_data_2014/"
 
 # IMAGES 2015 PATH
-IMG15WORK1 = DEST_DIR + "/gfs1/work/bebesook_data_2015/"
+IMG15WORK1 = DEST_DIR + "/gfs1/work/bebesook/beesbook_data_2015/"
 
 # IMAGES 2015 PAtH
 IMG15WORK2 = DEST_DIR + "/gfs2/work/bebesook/beesbook_data_2015/"
