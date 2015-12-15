@@ -20,6 +20,7 @@ def __parse_MD5sum(output):
 # copy and hashsum based on Linux utilities
 ################################################################################
 
+
 def cp(src, dst):
     '''
     Copy (single) src to dst.
@@ -189,43 +190,6 @@ def multi_threaded_copy_verify(src, dst):
             return True
     return False
 
+
 def file_cmp(src, dst):
     return filecmp.cmp(src, dst, shallow=False)
-
-# t2 = timeit.Timer("cp_py(\'./realData/20151024192956_2.tar\',"
-#                   "\'test.tar\')",
-#                   "from __main__ import cp_py")
-# time2 = t2.timeit(10)
-# print('cp_py')
-# print(time2)
-#
-# t2 = timeit.Timer("single_threaded_copy_verify_py_cmp(\'./realData/20151024192956_2.tar\',"
-#                   "\'test.tar\')",
-#                   "from __main__ import single_threaded_copy_verify_py_cmp")
-# time2 = t2.timeit(10)
-# print('cmp_py')
-# print(time2)
-# t2 = timeit.Timer("single_threaded_copy_verify_py(\'./realData/20151024192956_2.tar\',"
-#                   "\'test.tar\')",
-#                   "from __main__ import single_threaded_copy_verify_py")
-# time2 = t2.timeit(10)
-# print('md5_cp_py')
-# print(time2)
-# t2 = timeit.Timer("md5sum(\'./realData/20151024192956_2.tar\')",
-#                   "from __main__ import md5sum")
-# time2 = t2.timeit(10)
-# print('md5sum')
-# print(time2)
-# t2 = timeit.Timer("file_cmp(\'./realData/20151024192956_2.tar\',"
-#                   "\'test.tar\')",
-#                   "from __main__ import file_cmp")
-# time2 = t2.timeit(10)
-# print('file_cmp')
-# print(time2)
-# t2 = timeit.Timer("md5sum_py(\'./realData/20151024192956_2.tar\')",
-#                   "from __main__ import md5sum_py")
-# time2 = t2.timeit(10)
-# print('md5sum_py')
-# print(time2)
-#
-#
