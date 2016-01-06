@@ -126,7 +126,7 @@ class Memory(threading.Thread):
 # logging.disable(logging.DEBUG)
 
 logger = logging.getLogger('myLog')
-formatter = logging.Formatter('%(asctime)s | %(levelname)s: %(message)s')
+formatter = logging.Formatter('%(asctime)s | %(levelname)s | %(message)s')
 logger.setLevel(logging.DEBUG)
 
 stream_handler = logging.StreamHandler()
@@ -184,7 +184,7 @@ for tar_file in tar_list:
     pending_files_queue.put(tar_file)
 start_Time = datetime.datetime.now()
 
-# # for i in range(len(tar_list)):
+# just for testing and estimation of the average time
 # for i in range(1000):
 # pending_files_queue.put(tar_list[i])
 
