@@ -9,14 +9,33 @@ import logging
 import logging.handlers
 
 
-# SOURCE_DIR = '/gfs1/work/bebesook/beesbook_data_test_1000'
+# 1. Run HOME(beesbook) --> WORK2 (structured) 2014
 # SOURCE_DIR = '/home/b/beesbook'
+# DESTINATION_DIR = '/gfs1/work/bebesook/beesbook_data_2014'
+
+# 2. Run WORK1 --> WORK2 (structured) 2015
+# SOURCE_DIR = '/gfs1/work/bebesook/beesbook_data_2015'
+# DESTINATION_DIR = '/gfs2/work/bebesook/beesbook_data_2015'
+
+# 3. Run WORK1(structured) --> WORK2 (structured) 2014
+# SOURCE_DIR = '/gfs1/work/bebesook/beesbook_data_2014'
+# DESTINATION_DIR = '/gfs2/work/bebesook/beesbook_data_2014'
+
+# 4. Run WORK1(structured) --> WORK2 (structured) 2015
+# SOURCE_DIR = '/gfs2/work/bebesook/beesbook_data_2015'
+# DESTINATION_DIR = '/gfs1/work/bebesook/beesbook_data_2015'
+
+# ----------------------------------------------------------------------------
+# Test
+# SOURCE_DIR = '/gfs1/work/bebesook/beesbook_data_test_1000'
 # DESTINATION_DIR = '/gfs1/work/bebesook/beesbook_data_test_structured'
-# SOURCE_DIR = './test_src'
-DESTINATION_DIR = './test_dst'
+
 # SOURCE_DIR = './real'
-SOURCE_DIR = './dummyFiles/gfs1/work/bebesook/beesbook_data_2014'
 # DESTINATION_DIR = './structure'
+SOURCE_DIR = './dummyFiles/gfs1/work/bebesook/beesbook_data_2014'
+DESTINATION_DIR = './test_dst'
+
+
 STATUSFILE = 'Mirror_2014.status'
 LOGFILEPATH = 'Mirror_2014.log'
 
