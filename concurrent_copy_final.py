@@ -49,7 +49,7 @@ class Copier(threading.Thread):
     '''
     class for creating worker-threads for copying the files
     '''
-    # inizialize lock for creation of new directory
+    # initialize lock for creation of new directory
     mkdir_lock = threading.Lock()
 
     def __init__(self, pending_files, finished_files):
@@ -82,9 +82,9 @@ class Copier(threading.Thread):
             if not os.path.exists(dir):
                 os.makedirs(dir)
 
-            # TODO ist diese Ausgabe notwendig?
             if os.path.exists(dst_file):
-                logger.warning(dst_file + ' already exists')
+                logger.warning(dst_file + ' already exists and will be '
+                                          'overwritten')
             Copier.mkdir_lock.release()
 
             cmd = ['cp'] + [src_file] + [dst_file]
