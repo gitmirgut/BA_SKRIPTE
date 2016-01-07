@@ -30,9 +30,9 @@ import logging.handlers
 # SOURCE_DIR = '/gfs1/work/bebesook/beesbook_data_test_1000'
 # DESTINATION_DIR = '/gfs1/work/bebesook/beesbook_data_test_structured'
 
-SOURCE_DIR = './real'
+# SOURCE_DIR = './real'
 # DESTINATION_DIR = './structure'
-# SOURCE_DIR = './dummyFiles/gfs1/work/bebesook/beesbook_data_2014'
+SOURCE_DIR = './dummyFiles/gfs1/work/bebesook/beesbook_data_2014'
 DESTINATION_DIR = './test_dst'
 
 
@@ -188,8 +188,8 @@ t.setDaemon(True)
 t.start()
 
 # get all .tar-files for copy, which are not finished
-tar_list = [file for file in os.listdir(SOURCE_DIR) if is_filename_correct(
-        file) and file not in finished_files_list]
+tar_list = [file for file in os.listdir(SOURCE_DIR) if file.endswith(
+    '.tar') and file not in finished_files_list]
 
 logger.info(str(len(tar_list)) + ' files left for copy')
 # add .tar-files to queue
